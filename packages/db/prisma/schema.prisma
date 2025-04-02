@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// This is a dePin website monitoring service db schema
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+// website that want to be monitored
+model Website {
+  id           String         @id @default(uuid())
+  url          String
+  userId       String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  ticks websiteTicks[]
+}
+
+// validator that monitors the websites
+model Validator {
+  id           String         @id @default(uuid())
+  url          String
+  ip           String
+  location     String
+  publicKey    String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  ticks websiteTicks[]
+}
+
+model websiteTicks {
+  id          String     @id @default(uuid())
+  websiteId   String
+  validatorId String
+  status      TickStatus
+  latency     Int
+  createdAt   DateTime
+  website     Website    @relation(fields: [websiteId], references: [id])
+  validator   Validator  @relation(fields: [validatorId], references: [id])
+}
+
+enum TickStatus {
+  good
+  bad
+}
